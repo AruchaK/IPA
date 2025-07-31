@@ -1,0 +1,11 @@
+
+{% for vlan in vlans %}
+vlan {{ vlan.id }}
+  name {{ vlan.name }}
+{% endfor %}
+
+{% for itef in interfaces %}
+int {{ itef.name }}
+  switchport mode {{ itef.mode }}
+  switchport access vlan {{ itef.vlan }}
+{% endfor %}

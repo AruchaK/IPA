@@ -1,0 +1,10 @@
+acl_list:
+  type: standard
+  name: SECURE-REMOTE
+  rules:
+    - address: 172.31.36.0
+      wildcard: 0.0.0.255
+    - address: 10.30.6.0
+      wildcard: 0.0.0.255
+  action: deny
+  who: any

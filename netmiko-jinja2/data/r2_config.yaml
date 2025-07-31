@@ -1,0 +1,28 @@
+interfaces:
+  - name: g0/3
+    vrf: control-data
+    address: dhcp
+    no_shutdown: true
+  - name: lo0
+    address: 2.2.2.2
+    subnet: 255.255.255.255
+    no_shutdown: true
+route:
+  address: 0.0.0.0
+  subnet: 0.0.0.0
+  vrf: control-data
+  dest: 192.168.122.1
+ospf:
+  id: 10
+  vrf: control-data
+  default_information: true
+  networks:
+    - address: 192.168.2.0
+      wildcard: 0.0.0.255
+      area: 0
+    - address: 192.168.3.0
+      wildcard: 0.0.0.255
+      area: 0
+    - address: 2.2.2.2
+      wildcard: 0.0.0.0
+      area: 0

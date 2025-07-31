@@ -1,0 +1,13 @@
+
+{% for itef in interfaces %}
+int {{ itef.name }}
+    ip add {{ itef.address }} {{ itef.subnet }}
+    {% if itef.no_shutdown %}no shut{% endif %}
+{% endfor %}
+
+exit
+
+router ospf {{ ospf.id }} vrf {{ ospf.vrf }}
+{% for net in ospf.networks %}
+network {{ net.address }} {{ net.wildcard }} area {{ net.area }}
+{% endfor %}

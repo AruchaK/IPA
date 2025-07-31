@@ -1,0 +1,10 @@
+ip access-list {{ acl_list.type }} {{ acl_list.name }}
+{% for rule in acl_list.rules %}
+ permit {{ rule.address }} {{ rule.wildcard }}
+{% endfor %}
+{{ acl_list.action }} {{ acl_list.who }} 
+
+line vty 0 4
+ access-class {{ acl_list.name }} in
+ transport input ssh telnet
+ login local
