@@ -55,7 +55,12 @@ def connectDevice(ip : str, username="admin", password="cisco", tFile=None, vFil
         time.sleep(2)
         print(f"Finished configuration for {ip}")
 
-# Example Use
-#connectDevice("172.31.18.5", tFile="ospf_r2.txt", vFile="ospf_r2.yaml")
-#time.sleep(3) If want delay
-#connectDevice("172.31.18.5", tFile="pat_r2.txt", vFile="pat_r2.yaml")
+connectDevice("172.31.36.3", tFile="vlan_config.txt", vFile="vlan_config.yaml")
+time.sleep(3)
+connectDevice("172.31.36.4", tFile="r1_config.txt", vFile="r1_config.yaml")
+time.sleep(3)
+connectDevice("172.31.36.5", tFile="r2_config.txt", vFile="r2_config.yaml")
+time.sleep(3)
+connectDevice("172.31.36.5", tFile="pat_config.txt", vFile="pat_config.yaml")
+time.sleep(3)
+connectDevice("172.31.36.5", tFile="remote_config.txt", vFile="remote_config.yaml")
