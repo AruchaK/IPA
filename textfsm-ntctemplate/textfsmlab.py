@@ -17,7 +17,7 @@ def get_base_device_params(ip: str, username: str = "admin", password: str = "ci
 
 TEMPLATE_PATH = os.getenv("NTC_TEMPLATES_PATH", "templates")
 
-def get_interface_descriptions(interfaces_description_output: str) -> Dict[str, str]:
+def get_static_interface_description(interfaces_description_output: str) -> Dict[str, str]:
     """
     Parses the output of 'show interfaces description' and returns a dictionary
     of interfaces and their descriptions.
@@ -39,7 +39,7 @@ def get_interface_descriptions(interfaces_description_output: str) -> Dict[str, 
 
     return descriptions
 
-def generate_interface_descriptions(cdp_output: str, device_ip: str = None):
+def get_cdp_neighbors_description(cdp_output: str):
     template_path = Path(TEMPLATE_PATH) / "cisco_ios_show_cdp_neighbors.template"
     if not template_path.is_file():
         raise FileNotFoundError(f"Template file not found at: {template_path}")
@@ -62,37 +62,46 @@ def generate_interface_descriptions(cdp_output: str, device_ip: str = None):
         else:
             descriptions[local_intf] = f"Connect to {remote_intf} of {remote_device}"
 
+    return descriptions
+
+def generate_interface_descriptions(device_ip: str):
+
+    live_cdp_output = get_cdp_from_device(device_ip)
+    descriptions = get_cdp_neighbors_description(live_cdp_output)
+
     live_int_desc_output = get_int_desc_from_device(device_ip)
+    static_interface_description = get_static_interface_description(live_int_desc_output)
 
-    show_interface_description = get_interface_descriptions(live_int_desc_output)
-
-    descriptions.update(show_interface_description)
+    descriptions.update(static_interface_description)
 
     return descriptions
+
+def send_command_to_device(ip: str, command: str) -> str:
+    """Executes a command on the device and returns the output.
+    """
+    device_params = get_base_device_params(ip)
+    with ConnectHandler(**device_params) as ssh:
+        ssh.enable()
+        output = ssh.send_command(command)
+        return output
 
 def get_int_desc_from_device(ip: str) -> str:
     """
     Execute 'show interfaces description' and get existing descriptions.
     """
-    device_params = get_base_device_params(ip)
-    with ConnectHandler(**device_params) as ssh:
-        ssh.enable()
-        int_desc_output = ssh.send_command("show interfaces description")
-        return int_desc_output
+    if not ip:
+        return "Error: No IP address provided."
+    return send_command_to_device(ip, "show interfaces description")
 
 
 def get_cdp_from_device(ip: str) -> str:
     """
     Connects to a network device and retrieves the output of 'show cdp neighbors'.
     """
-    device_params = get_base_device_params(ip)
-    print("Connecting to " + ip)
-    with ConnectHandler(**device_params) as ssh:
-        ssh.enable()
-        print(f"Connected to {ip}")
-        cdp_output = ssh.send_command("show cdp neighbors")
-        return cdp_output
-    
+    if not ip:
+        return "Error: No IP address provided."
+    return send_command_to_device(ip, "show cdp neighbors")
+
 if __name__ == "__main__":
     device_ip = "172.31.36.5"
     live_cdp_output = get_cdp_from_device(device_ip)
@@ -100,5 +109,5 @@ if __name__ == "__main__":
     if "Error" in live_cdp_output:
         print(live_cdp_output)
     else:
-        interface_descriptions = generate_interface_descriptions(live_cdp_output)
+        interface_descriptions = get_cdp_neighbors_description(live_cdp_output)
         print(interface_descriptions)
