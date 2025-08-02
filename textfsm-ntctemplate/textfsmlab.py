@@ -33,6 +33,8 @@ def get_static_interface_description(interfaces_description_output: str) -> Dict
     descriptions = {}
     for row in parsed_data:
         interface = row[0]
+        interface = interface.replace("Gi", "Gig ", 1)
+
         description = row[3]
         if description != "":
             descriptions[interface] = description
@@ -77,7 +79,8 @@ def generate_interface_descriptions(device_ip: str):
     return descriptions
 
 def send_command_to_device(ip: str, command: str) -> str:
-    """Executes a command on the device and returns the output.
+    """
+        Executes a command on the device and returns the output.
     """
     device_params = get_base_device_params(ip)
     with ConnectHandler(**device_params) as ssh:
@@ -89,8 +92,6 @@ def get_int_desc_from_device(ip: str) -> str:
     """
     Execute 'show interfaces description' and get existing descriptions.
     """
-    if not ip:
-        return "Error: No IP address provided."
     return send_command_to_device(ip, "show interfaces description")
 
 
@@ -98,16 +99,9 @@ def get_cdp_from_device(ip: str) -> str:
     """
     Connects to a network device and retrieves the output of 'show cdp neighbors'.
     """
-    if not ip:
-        return "Error: No IP address provided."
     return send_command_to_device(ip, "show cdp neighbors")
 
 if __name__ == "__main__":
     device_ip = "172.31.36.5"
-    live_cdp_output = get_cdp_from_device(device_ip)
-
-    if "Error" in live_cdp_output:
-        print(live_cdp_output)
-    else:
-        interface_descriptions = get_cdp_neighbors_description(live_cdp_output)
-        print(interface_descriptions)
+    interface_descriptions = generate_interface_descriptions(device_ip)
+    print(interface_descriptions)
